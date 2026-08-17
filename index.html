@@ -53,6 +53,9 @@
   .color-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
   .color-grid label{font-size:11px; color:var(--ui-text-dim); display:block; margin-bottom:3px;}
   .color-grid input[type=color]{width:100%; height:32px; border:1px solid var(--ui-border); border-radius:6px; background:none; padding:2px;}
+  .hex-row{display:flex; gap:6px; align-items:center;}
+  .hex-row input[type=color]{width:36px; height:30px; flex-shrink:0;}
+  .hex-input{flex:1; min-width:0; font-family:"SF Mono",Menlo,Consolas,monospace; text-transform:uppercase; font-size:11.5px; padding:6px 7px; background:var(--ui-panel-2); border:1px solid var(--ui-border); color:var(--ui-text); border-radius:6px;}
   select{appearance:none;}
   button{font-family:inherit; cursor:pointer;}
   .btn{background:var(--ui-accent); color:#0b0c12; border:none; padding:10px 14px; border-radius:8px; font-weight:700; font-size:13.5px;}
@@ -138,10 +141,21 @@
         <div class="field"><label>RSS / Other URL</label><input type="url" id="linkRss" placeholder="https://..."></div>
       </div>
       <div class="field">
-        <label>Episodes (one per line: Title | Short description)</label>
-        <textarea id="episodeList" placeholder="Ep 12: The Long Way Home | A conversation about slow cinema with director Ana Reyes
+        <label>Episodes (one per line: Title | Short description | Audio file URL or Spotify/Apple episode link — optional)</label>
+        <textarea id="episodeList" placeholder="Ep 12: The Long Way Home | A conversation about slow cinema with director Ana Reyes | https://open.spotify.com/episode/...
 Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"></textarea>
       </div>
+    </div>
+
+    <h2>Extra section links <span style="text-transform:none; letter-spacing:0; font-weight:400;">(optional)</span></h2>
+    <p class="helptext" style="margin-top:-6px; margin-bottom:10px;">Only used if you enable the Video, Store, or Coaching sections below.</p>
+    <div class="field">
+      <label>Video embed URL (YouTube or Vimeo)</label>
+      <input type="url" id="videoUrl" placeholder="https://youtube.com/watch?v=...">
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Store / checkout link</label><input type="url" id="storeUrl" placeholder="https://yourstore.com"></div>
+      <div class="field"><label>Booking link (e.g. Calendly)</label><input type="url" id="bookingUrl" placeholder="https://calendly.com/you"></div>
     </div>
 
     <h2>3 · Look &amp; feel</h2>
@@ -154,23 +168,41 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
         <option value="darktech">Dark Mode Tech</option>
         <option value="playful">Playful Pop</option>
         <option value="elegant">Elegant Serif</option>
+        <option value="luxury">Luxury</option>
+        <option value="brutalist">Brutalist</option>
+        <option value="y2k">Y2K</option>
+        <option value="corporate">Corporate</option>
+        <option value="handmade">Handmade / Zine</option>
+        <option value="custom">Describe your own vibe…</option>
       </select>
+      <div id="customVibeWrap" style="display:none; margin-top:8px;">
+        <textarea id="customVibeText" placeholder="e.g. warm, cozy, hand-crafted — like a small batch coffee shop"></textarea>
+        <p class="helptext">We'll match colors, fonts, and shapes to fit as you type — everything below stays editable.</p>
+      </div>
     </div>
 
     <div class="field">
       <label>Color palette</label>
       <div class="swatches" id="colorSwatches"></div>
       <div id="customColorGrid" class="color-grid" style="display:none;">
-        <div><label>Primary</label><input type="color" id="cPrimary" value="#7c5cff"></div>
-        <div><label>Secondary</label><input type="color" id="cSecondary" value="#1b1b2f"></div>
-        <div><label>Accent</label><input type="color" id="cAccent" value="#ffb703"></div>
-        <div><label>Background</label><input type="color" id="cBg" value="#ffffff"></div>
+        <div><label>Primary</label><div class="hex-row"><input type="color" id="cPrimary" value="#7c5cff"><input type="text" id="cPrimaryHex" class="hex-input" placeholder="#7C5CFF"></div></div>
+        <div><label>Secondary</label><div class="hex-row"><input type="color" id="cSecondary" value="#1b1b2f"><input type="text" id="cSecondaryHex" class="hex-input" placeholder="#1B1B2F"></div></div>
+        <div><label>Accent</label><div class="hex-row"><input type="color" id="cAccent" value="#ffb703"><input type="text" id="cAccentHex" class="hex-input" placeholder="#FFB703"></div></div>
+        <div><label>Background</label><div class="hex-row"><input type="color" id="cBg" value="#ffffff"><input type="text" id="cBgHex" class="hex-input" placeholder="#FFFFFF"></div></div>
+        <div><label>Text</label><div class="hex-row"><input type="color" id="cText" value="#1a1a1a"><input type="text" id="cTextHex" class="hex-input" placeholder="#1A1A1A"></div></div>
       </div>
     </div>
 
     <div class="field">
       <label>Font pairing</label>
       <select id="fontPair"></select>
+      <div id="customFontFields" style="display:none; margin-top:8px;">
+        <div class="field-row">
+          <div class="field"><label>Heading font</label><input type="text" id="customHeadingFont" placeholder="e.g. Libre Baskerville"></div>
+          <div class="field"><label>Body font</label><input type="text" id="customBodyFont" placeholder="e.g. Space Mono"></div>
+        </div>
+        <p class="helptext">Type any font name exactly as it appears on <a href="https://fonts.google.com" target="_blank" rel="noopener" style="color:var(--ui-accent);">fonts.google.com</a> — we'll load it automatically.</p>
+      </div>
     </div>
 
     <div class="field">
@@ -260,6 +292,12 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     { key:"links",        label:"Platform / Social links", default:true },
     { key:"gallery",     label:"Gallery",           default:false },
     { key:"faq",          label:"FAQ",               default:false },
+    { key:"pricing",     label:"Pricing / plans",   default:false },
+    { key:"events",      label:"Events / tour dates", default:false },
+    { key:"video",        label:"Video embed",       default:false },
+    { key:"store",        label:"Online store",      default:false },
+    { key:"coaching",    label:"Coaching / mentoring", default:false },
+    { key:"blog",          label:"Blog / posts",      default:false },
     { key:"newsletter",  label:"Newsletter signup", default:true },
     { key:"contact",      label:"Contact",           default:true }
   ];
@@ -270,6 +308,11 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     forest:  { name:"Forest",  primary:"#2D6A4F", secondary:"#1B4332", accent:"#D4A373", bg:"#F8F6F0", text:"#1B1B1B", dark:false },
     monotech:{ name:"Mono Tech (dark)", primary:"#8A7CFF", secondary:"#151521", accent:"#00E5A0", bg:"#0F0F13", text:"#F2F2F7", dark:true },
     berry:   { name:"Berry",   primary:"#E63979", secondary:"#3A0CA3", accent:"#FFD60A", bg:"#FFF0F6", text:"#2B0B1E", dark:false },
+    luxe:    { name:"Luxe (dark + gold)", primary:"#C9A227", secondary:"#0B0B0B", accent:"#E5C158", bg:"#111111", text:"#F5F1E6", dark:true },
+    brutal:  { name:"Brutal",  primary:"#000000", secondary:"#111111", accent:"#FFEB3B", bg:"#FFFFFF", text:"#000000", dark:false },
+    y2k:     { name:"Y2K",     primary:"#FF6EC7", secondary:"#0D0D2B", accent:"#B9B9FF", bg:"#F4F4FB", text:"#101018", dark:false },
+    corp:    { name:"Corporate", primary:"#1B4DB1", secondary:"#0E274F", accent:"#00B2A9", bg:"#F5F7FA", text:"#111827", dark:false },
+    craft:   { name:"Handmade", primary:"#A15C38", secondary:"#3E2C23", accent:"#C98A3E", bg:"#FBF3E7", text:"#2B211A", dark:false },
     custom:  { name:"Custom…" }
   };
 
@@ -281,7 +324,10 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     bebasNunito:    { name:"Bebas Neue + Nunito Sans",      heading:"Bebas Neue", body:"Nunito Sans", gf:"Bebas+Neue|Nunito+Sans:wght@400;600" },
     quicksandMulish:{ name:"Quicksand + Mulish",            heading:"Quicksand", body:"Mulish", gf:"Quicksand:wght@600;700|Mulish:wght@400;500" },
     dmSerifDmSans:  { name:"DM Serif Display + DM Sans",    heading:"DM Serif Display", body:"DM Sans", gf:"DM+Serif+Display|DM+Sans:wght@400;500" },
-    archivo:        { name:"Archivo Black + Archivo",       heading:"Archivo Black", body:"Archivo", gf:"Archivo+Black|Archivo:wght@400;500" }
+    archivo:        { name:"Archivo Black + Archivo",       heading:"Archivo Black", body:"Archivo", gf:"Archivo+Black|Archivo:wght@400;500" },
+    cormorantMontserrat: { name:"Cormorant Garamond + Montserrat", heading:"Cormorant Garamond", body:"Montserrat", gf:"Cormorant+Garamond:wght@500;600;700|Montserrat:wght@400;500" },
+    orbitronRubik:  { name:"Orbitron + Rubik",              heading:"Orbitron", body:"Rubik", gf:"Orbitron:wght@600;700|Rubik:wght@400;500" },
+    soraInter:      { name:"Sora + Inter",                  heading:"Sora", body:"Inter", gf:"Sora:wght@600;700|Inter:wght@400;500" }
   };
 
   var STYLE_PRESETS = {
@@ -290,7 +336,12 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     retro:    { radius:"18px", shadow:"6px 6px 0 rgba(0,0,0,.15)",  heroAlign:"center", headingTransform:"none", letterSpacing:"0", buttonShape:"999px", sectionPad:"90px" },
     darktech: { radius:"12px", shadow:"0 0 0 1px rgba(255,255,255,.06)", heroAlign:"left", headingTransform:"uppercase", letterSpacing:".04em", buttonShape:"6px", sectionPad:"100px" },
     playful:  { radius:"24px", shadow:"0 10px 30px rgba(0,0,0,.12)", heroAlign:"center", headingTransform:"none", letterSpacing:"0", buttonShape:"999px", sectionPad:"90px" },
-    elegant:  { radius:"4px",  shadow:"0 2px 12px rgba(0,0,0,.08)",  heroAlign:"center", headingTransform:"none", letterSpacing:".02em", buttonShape:"2px", sectionPad:"110px" }
+    elegant:  { radius:"4px",  shadow:"0 2px 12px rgba(0,0,0,.08)",  heroAlign:"center", headingTransform:"none", letterSpacing:".02em", buttonShape:"2px", sectionPad:"110px" },
+    luxury:   { radius:"2px",  shadow:"0 8px 30px rgba(0,0,0,.35)",  heroAlign:"center", headingTransform:"none", letterSpacing:".03em", buttonShape:"2px", sectionPad:"120px" },
+    brutalist:{ radius:"0px",  shadow:"6px 6px 0 rgba(0,0,0,1)",     heroAlign:"left",   headingTransform:"uppercase", letterSpacing:"-.01em", buttonShape:"0px", sectionPad:"80px" },
+    y2k:      { radius:"20px", shadow:"0 0 24px rgba(255,110,199,.35)", heroAlign:"center", headingTransform:"none", letterSpacing:".01em", buttonShape:"999px", sectionPad:"90px" },
+    corporate:{ radius:"6px",  shadow:"0 2px 10px rgba(0,0,0,.08)",  heroAlign:"left",   headingTransform:"none", letterSpacing:"0", buttonShape:"6px", sectionPad:"100px" },
+    handmade: { radius:"16px", shadow:"4px 4px 0 rgba(0,0,0,.08)",   heroAlign:"center", headingTransform:"none", letterSpacing:"0", buttonShape:"14px", sectionPad:"90px" }
   };
 
   var STYLE_DEFAULTS = {
@@ -299,8 +350,49 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     retro:{ color:"sunset", font:"bebasNunito" },
     darktech:{ color:"monotech", font:"spaceIbm" },
     playful:{ color:"berry", font:"quicksandMulish" },
-    elegant:{ color:"forest", font:"dmSerifDmSans" }
+    elegant:{ color:"forest", font:"dmSerifDmSans" },
+    luxury:{ color:"luxe", font:"cormorantMontserrat" },
+    brutalist:{ color:"brutal", font:"archivo" },
+    y2k:{ color:"y2k", font:"orbitronRubik" },
+    corporate:{ color:"corp", font:"soraInter" },
+    handmade:{ color:"craft", font:"frauncesWork" }
   };
+
+  // keyword tags used to match a free-text "describe your own vibe" to the closest base style
+  var STYLE_TAGS = {
+    minimal:["clean","simple","minimal","modern","whitespace","airy","tech","startup"],
+    editorial:["bold","editorial","magazine","dramatic","serif","contrast","fashion"],
+    retro:["retro","vintage","warm","nostalgic","groovy","70s","throwback"],
+    darktech:["dark","tech","futuristic","sleek","cyberpunk","neon","gaming"],
+    playful:["playful","fun","colorful","rounded","bubbly","cute","whimsical","kids"],
+    elegant:["elegant","classy","sophisticated","refined","timeless","chic"],
+    luxury:["luxury","premium","gold","upscale","exclusive","opulent","high-end"],
+    brutalist:["brutalist","raw","concrete","stark","industrial","harsh","punk"],
+    y2k:["y2k","metallic","chrome","2000s","cyber","holographic","futurepop"],
+    corporate:["corporate","professional","business","trustworthy","formal","enterprise"],
+    handmade:["handmade","craft","zine","indie","diy","organic","artisan","cozy","coffee"]
+  };
+
+  function findClosestStyleKey(text){
+    var words = (text||"").toLowerCase().match(/[a-z0-9]+/g) || [];
+    if(!words.length) return "minimal";
+    var best = "minimal", bestScore = 0;
+    Object.keys(STYLE_TAGS).forEach(function(key){
+      var tags = STYLE_TAGS[key];
+      var score = 0;
+      words.forEach(function(w){ if(tags.indexOf(w) !== -1) score++; });
+      if(score > bestScore){ bestScore = score; best = key; }
+    });
+    return best;
+  }
+
+  function sanitizeFontName(name){
+    return (name||"").replace(/['";{}<>]/g,"").trim();
+  }
+  function fontNameToParam(name){
+    var clean = (name||"").replace(/[^a-zA-Z0-9 ]/g,"").trim();
+    return clean.replace(/\s+/g,"+") || "Inter";
+  }
 
   /* ============================= STATE ============================= */
   var lastOutput = null; // {html, css, js}
@@ -357,6 +449,31 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
       opt.value = key; opt.textContent = FONT_PAIRS[key].name;
       sel.appendChild(opt);
     });
+    var customOpt = document.createElement("option");
+    customOpt.value = "custom"; customOpt.textContent = "Custom fonts…";
+    sel.appendChild(customOpt);
+  }
+
+  function syncColorAndHex(colorId, hexId){
+    var colorEl = el(colorId), hexEl = el(hexId);
+    if(!colorEl || !hexEl) return;
+    hexEl.value = colorEl.value;
+    colorEl.addEventListener("input", function(){ hexEl.value = colorEl.value; });
+    hexEl.addEventListener("input", function(){
+      var v = hexEl.value.trim();
+      if(/^#([0-9a-fA-F]{3})$/.test(v)){
+        v = "#" + v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+      }
+      if(/^#[0-9a-fA-F]{6}$/.test(v)){ colorEl.value = v; }
+    });
+  }
+
+  function wireColorHexSync(){
+    syncColorAndHex("cPrimary", "cPrimaryHex");
+    syncColorAndHex("cSecondary", "cSecondaryHex");
+    syncColorAndHex("cAccent", "cAccentHex");
+    syncColorAndHex("cBg", "cBgHex");
+    syncColorAndHex("cText", "cTextHex");
   }
 
   function selectedColorKey(){
@@ -364,9 +481,8 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     return active ? active.dataset.color : "sunset";
   }
 
-  function applyStyleDefaults(){
-    var style = el("styleVibe").value;
-    var d = STYLE_DEFAULTS[style];
+  function applySuggestedLook(styleKey){
+    var d = STYLE_DEFAULTS[styleKey];
     if(!d) return;
     var swatch = document.querySelector('.swatch[data-color="'+d.color+'"]');
     if(swatch){
@@ -375,6 +491,31 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
       el("customColorGrid").style.display = "none";
     }
     el("fontPair").value = d.font;
+    el("customFontFields").style.display = "none";
+  }
+
+  function applyStyleDefaults(){
+    var style = el("styleVibe").value;
+    var customWrap = el("customVibeWrap");
+    if(style === "custom"){
+      customWrap.style.display = "block";
+      return; // colors/fonts are suggested live as the user types their vibe (see wireCustomVibe)
+    }
+    customWrap.style.display = "none";
+    applySuggestedLook(style);
+  }
+
+  var customVibeTimer = null;
+  function wireCustomVibe(){
+    var box = el("customVibeText");
+    if(!box) return;
+    box.addEventListener("input", function(){
+      clearTimeout(customVibeTimer);
+      customVibeTimer = setTimeout(function(){
+        var key = findClosestStyleKey(box.value);
+        applySuggestedLook(key);
+      }, 400);
+    });
   }
 
   /* ============================= GATHER STATE ============================= */
@@ -384,7 +525,7 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     if(lines.length === 0) return null;
     return lines.map(function(l){
       var parts = l.split("|");
-      return { title: (parts[0]||"").trim(), desc: (parts[1]||"").trim() };
+      return { title: (parts[0]||"").trim(), desc: (parts[1]||"").trim(), link: (parts[2]||"").trim() };
     });
   }
 
@@ -396,7 +537,7 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
       colors = {
         primary: el("cPrimary").value, secondary: el("cSecondary").value,
         accent: el("cAccent").value, bg: el("cBg").value,
-        text: "#1a1a1a", dark:false
+        text: el("cText").value, dark:false
       };
     } else {
       colors = COLOR_PRESETS[colorKey];
@@ -412,15 +553,34 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
 
     var episodeItems = parseItemList(el("episodeList") ? el("episodeList").value : "", "item");
 
+    var styleValue = el("styleVibe").value;
+    var effectiveStyleKey = styleValue === "custom" ? findClosestStyleKey(el("customVibeText").value) : styleValue;
+
+    var fontValue = el("fontPair").value;
+    var fontPair;
+    if(fontValue === "custom"){
+      var headRaw = sanitizeFontName(el("customHeadingFont").value) || "Poppins";
+      var bodyRaw = sanitizeFontName(el("customBodyFont").value) || "Inter";
+      fontPair = {
+        name: "Custom",
+        heading: headRaw,
+        body: bodyRaw,
+        gf: fontNameToParam(headRaw) + ":wght@400;500;600;700|" + fontNameToParam(bodyRaw) + ":wght@400;500"
+      };
+    } else {
+      fontPair = FONT_PAIRS[fontValue];
+    }
+
     return {
       siteType: siteType,
       siteName: el("siteName").value.trim() || "Your Site Name",
       tagline: el("tagline").value.trim(),
       description: el("description").value.trim(),
       sections: sections,
-      style: el("styleVibe").value,
+      style: styleValue,
+      styleTokens: STYLE_PRESETS[effectiveStyleKey] || STYLE_PRESETS.minimal,
       colors: colors,
-      fontPair: FONT_PAIRS[el("fontPair").value],
+      fontPair: fontPair,
       layout: el("layoutStructure").value,
       framework: el("framework").value,
       darkModeToggle: el("darkModeToggle").checked,
@@ -432,6 +592,9 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
         youtube: el("linkYoutube") ? el("linkYoutube").value.trim() : "",
         rss: el("linkRss") ? el("linkRss").value.trim() : ""
       },
+      videoUrl: el("videoUrl") ? el("videoUrl").value.trim() : "",
+      storeUrl: el("storeUrl") ? el("storeUrl").value.trim() : "",
+      bookingUrl: el("bookingUrl") ? el("bookingUrl").value.trim() : "",
       items: episodeItems,
       aiCopy: window.__aiCopy || null
     };
@@ -477,6 +640,31 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
       newsletterTitle: (ai && ai.newsletterTitle) || "Never miss an update",
       newsletterSub: (ai && ai.newsletterSub) || ("Get new "+meta.itemWord+"s from "+state.siteName+" straight to your inbox."),
       contactTitle: "Get in touch",
+      pricing: [
+        { name:"Starter", price:"$0", period:"/mo", features:["Core access","Community updates","Email support"], cta:"Get Started" },
+        { name:"Pro", price:"$19", period:"/mo", features:["Everything in Starter","Priority support","Exclusive content"], cta:"Go Pro", highlight:true },
+        { name:"Premium", price:"$49", period:"/mo", features:["Everything in Pro","1:1 access","Early access to new "+meta.itemWord+"s"], cta:"Go Premium" }
+      ],
+      events: [
+        { title:"Live Recording Night", date:"Sat, Sep 12", location:"Local venue — details on RSVP" },
+        { title:"Community Meetup", date:"Thu, Oct 8", location:"Online" },
+        { title:"Annual Live Show", date:"Fri, Nov 14", location:"TBA — stay tuned" }
+      ],
+      storeProducts: [
+        { name:"Logo T-Shirt", price:"$28", desc:"Soft cotton tee with the "+state.siteName+" logo." },
+        { name:"Enamel Pin Set", price:"$14", desc:"A set of three collectible pins." },
+        { name:"Tote Bag", price:"$22", desc:"Canvas tote, perfect for everyday carry." }
+      ],
+      coaching: [
+        { title:"1:1 Coaching Call", desc:"A focused one-on-one session tailored to where you're at right now.", price:"$120 / session" },
+        { title:"4-Week Mentorship", desc:"Weekly check-ins plus async support to keep you moving.", price:"$420 / month" },
+        { title:"Group Workshop", desc:"Small-group session covering the fundamentals, live Q&A included.", price:"$60 / seat" }
+      ],
+      blogPosts: [
+        { title:"Where We're Headed Next", excerpt:"A quick note on what's coming up and why we're excited about it.", date:"This week" },
+        { title:"Behind the Scenes", excerpt:"A look at how we put this all together, warts and all.", date:"Last month" },
+        { title:"Lessons Learned So Far", excerpt:"The things we'd tell ourselves if we were starting over.", date:"Last month" }
+      ],
       footerNote: "© "+new Date().getFullYear()+" "+state.siteName+". All rights reserved."
     };
     return content;
@@ -486,7 +674,7 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
 
   function buildCSS(state){
     var c = state.colors;
-    var sp = STYLE_PRESETS[state.style];
+    var sp = state.styleTokens;
     var fp = state.fontPair;
     var lines = [];
     lines.push(":root{");
@@ -582,12 +770,62 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     lines.push(".contact-form input, .contact-form textarea{padding:13px 14px; border-radius:8px; border:1px solid rgba(120,120,120,.3); font-family:inherit; font-size:14.5px; background:var(--bg); color:var(--text);}");
     lines.push(".contact-form textarea{min-height:120px;}");
 
-    // audio player (podcast)
+    // audio player (podcast) — demo fake player, real embed, and native <audio>
     lines.push(".audio-player{display:flex; align-items:center; gap:14px; background:var(--bg); border:1px solid rgba(120,120,120,.2); border-radius:var(--radius); padding:14px 18px; margin-top:16px;}");
     lines.push(".audio-player .play-btn{width:40px; height:40px; border-radius:50%; background:var(--primary); color:#fff; border:none; font-size:14px; flex-shrink:0;}");
     lines.push(".audio-player .track-info{font-size:13px; opacity:.8;}");
     lines.push(".audio-player .bar{flex:1; height:4px; background:rgba(120,120,120,.3); border-radius:4px; overflow:hidden;}");
     lines.push(".audio-player .bar-fill{height:100%; width:0%; background:var(--primary); transition:width .1s linear;}");
+    lines.push(".embed-player{border-radius:var(--radius); margin-top:16px; display:block;}");
+    lines.push(".native-audio{width:100%; margin-top:16px;}");
+
+    // pricing
+    lines.push(".pricing-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:36px; align-items:stretch;}");
+    lines.push(".price-card{background:var(--bg); border:1px solid rgba(120,120,120,.2); border-radius:var(--radius); padding:30px 26px; box-shadow:var(--shadow); display:flex; flex-direction:column;}");
+    lines.push(".price-card.highlight{border-color:var(--primary); border-width:2px; transform:translateY(-6px);}");
+    lines.push(".price-card h3{font-size:18px; margin-bottom:6px;}");
+    lines.push(".price-card .price{font-size:36px; font-family:var(--font-heading); margin:6px 0 4px;}");
+    lines.push(".price-card .price span{font-size:14px; opacity:.6; font-family:var(--font-body);}");
+    lines.push(".price-card ul{list-style:none; padding:0; margin:18px 0; flex:1;}");
+    lines.push(".price-card li{padding:6px 0; font-size:14px; opacity:.85; border-top:1px solid rgba(120,120,120,.15);}");
+    lines.push(".price-card li:first-child{border-top:none;}");
+
+    // events
+    lines.push(".events-list{margin-top:32px; display:flex; flex-direction:column; gap:14px;}");
+    lines.push(".event-item{display:flex; align-items:center; justify-content:space-between; gap:16px; background:var(--bg); border:1px solid rgba(120,120,120,.2); border-radius:var(--radius); padding:18px 22px; flex-wrap:wrap;}");
+    lines.push(".event-item .event-date{font-weight:700; color:var(--primary); font-size:13px; text-transform:uppercase; letter-spacing:.05em; min-width:120px;}");
+    lines.push(".event-item h4{margin:0; font-size:16.5px; flex:1;}");
+    lines.push(".event-item .event-loc{font-size:13px; opacity:.7;}");
+
+    // video
+    lines.push(".video-embed-wrap{position:relative; padding-top:56.25%; margin-top:32px; border-radius:var(--radius); overflow:hidden; background:var(--secondary);}");
+    lines.push(".video-embed-wrap iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}");
+    lines.push(".video-embed-wrap .video-ph{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; opacity:.7; font-size:14px;}");
+
+    // store
+    lines.push(".store-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px; margin-top:36px;}");
+    lines.push(".product-card{background:var(--bg); border:1px solid rgba(120,120,120,.2); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);}");
+    lines.push(".product-card .product-ph{aspect-ratio:1/1; background:linear-gradient(135deg,var(--primary),var(--accent));}");
+    lines.push(".product-card .product-body{padding:18px;}");
+    lines.push(".product-card h3{font-size:16px; margin-bottom:4px;}");
+    lines.push(".product-card .product-price{font-weight:700; color:var(--primary); margin-bottom:10px;}");
+    lines.push(".product-card p{font-size:13.5px; opacity:.8; margin:0 0 14px;}");
+
+    // coaching
+    lines.push(".coaching-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:36px;}");
+    lines.push(".coaching-card{background:var(--secondary); color:#fff; border-radius:var(--radius); padding:28px; box-shadow:var(--shadow);}");
+    lines.push(".coaching-card h3{font-size:18px; margin-bottom:8px;}");
+    lines.push(".coaching-card p{opacity:.85; font-size:14.5px; line-height:1.6; margin:0 0 14px;}");
+    lines.push(".coaching-card .coaching-price{font-weight:700; opacity:.9; margin-bottom:14px; display:block;}");
+
+    // blog
+    lines.push(".blog-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:22px; margin-top:36px;}");
+    lines.push(".blog-card{background:var(--bg); border:1px solid rgba(120,120,120,.2); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);}");
+    lines.push(".blog-card .blog-ph{aspect-ratio:16/9; background:linear-gradient(135deg,var(--secondary),var(--primary));}");
+    lines.push(".blog-card .blog-body{padding:20px;}");
+    lines.push(".blog-card .blog-date{font-size:12px; color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing:.05em;}");
+    lines.push(".blog-card h3{font-size:17px; margin:6px 0 8px;}");
+    lines.push(".blog-card p{font-size:14px; opacity:.8; margin:0;}");
 
     // footer
     lines.push("footer{padding:40px 0; text-align:center; font-size:13px; opacity:.65; border-top:1px solid rgba(120,120,120,.15);}");
@@ -610,9 +848,48 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     if(state.sections.about) out.push('<a href="#about">About</a>');
     if(state.sections.items) out.push('<a href="#items">'+escapeHtml(SITE_TYPES[state.siteType].itemsLabel)+'</a>');
     if(state.sections.people) out.push('<a href="#people">'+escapeHtml(SITE_TYPES[state.siteType].peopleLabel)+'</a>');
+    if(state.sections.pricing) out.push('<a href="#pricing">Pricing</a>');
+    if(state.sections.coaching) out.push('<a href="#coaching">Coaching</a>');
+    if(state.sections.store) out.push('<a href="#store">Shop</a>');
+    if(state.sections.blog) out.push('<a href="#blog">Blog</a>');
+    if(state.sections.events) out.push('<a href="#events">Events</a>');
     if(state.sections.faq) out.push('<a href="#faq">FAQ</a>');
     if(state.sections.contact) out.push('<a href="#contact">Contact</a>');
     return out.join("\n        ");
+  }
+
+  function podcastPlayerHTML(it){
+    var link = (it.link || "").trim();
+    if(!link){
+      return '        <div class="audio-player" data-player>\n' +
+             '          <button class="play-btn" data-play>▶</button>\n' +
+             '          <div style="flex:1;">\n' +
+             '            <div class="track-info">'+escapeHtml(it.title)+'</div>\n' +
+             '            <div class="bar"><div class="bar-fill"></div></div>\n' +
+             '          </div>\n' +
+             '        </div>';
+    }
+    var lower = link.toLowerCase();
+    if(lower.indexOf("open.spotify.com") !== -1){
+      var spotifyEmbed = link.split("?")[0].replace("open.spotify.com/", "open.spotify.com/embed/");
+      return '        <iframe class="embed-player" src="'+escapeHtml(spotifyEmbed)+'" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+    }
+    if(lower.indexOf("podcasts.apple.com") !== -1){
+      var appleEmbed = link.split("?")[0].replace("podcasts.apple.com", "embed.podcasts.apple.com");
+      return '        <iframe class="embed-player" src="'+escapeHtml(appleEmbed)+'" width="100%" height="175" frameborder="0" allow="autoplay *; encrypted-media *;" loading="lazy"></iframe>';
+    }
+    // treat as a direct playable audio file URL
+    return '        <audio class="native-audio" controls preload="none" src="'+escapeHtml(link)+'"></audio>';
+  }
+
+  function toVideoEmbedUrl(url){
+    var u = (url||"").trim();
+    if(!u) return null;
+    var yt = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{6,})/);
+    if(yt) return "https://www.youtube.com/embed/" + yt[1];
+    var vimeo = u.match(/vimeo\.com\/(\d+)/);
+    if(vimeo) return "https://player.vimeo.com/video/" + vimeo[1];
+    return u; // fall back to whatever URL was given, assume it's already embeddable
   }
 
   function buildHTML(state, content){
@@ -672,13 +949,7 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
         parts.push('        <h3>'+escapeHtml(it.title)+'</h3>');
         parts.push('        <p>'+escapeHtml(it.desc)+'</p>');
         if(state.siteType === "podcast"){
-          parts.push('        <div class="audio-player" data-player>');
-          parts.push('          <button class="play-btn" data-play>▶</button>');
-          parts.push('          <div style="flex:1;">');
-          parts.push('            <div class="track-info">'+escapeHtml(it.title)+'</div>');
-          parts.push('            <div class="bar"><div class="bar-fill"></div></div>');
-          parts.push('          </div>');
-          parts.push('        </div>');
+          parts.push(podcastPlayerHTML(it));
         }
         parts.push('      </div>');
       });
@@ -711,6 +982,124 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
       parts.push('    <div class="testimonial-grid">');
       content.testimonials.forEach(function(t){
         parts.push('      <blockquote>&ldquo;'+escapeHtml(t.quote)+'&rdquo;<cite>'+escapeHtml(t.author)+'</cite></blockquote>');
+      });
+      parts.push('    </div>');
+      parts.push('  </div>');
+      parts.push('</section>');
+    }
+
+    // pricing
+    if(state.sections.pricing){
+      parts.push('<section id="pricing" style="background:rgba(120,120,120,.04);">');
+      parts.push('  <div class="container'+revealClass+'">');
+      parts.push('    <span class="section-kicker">Plans</span>');
+      parts.push('    <h2 class="section-title">Pricing</h2>');
+      parts.push('    <div class="pricing-grid">');
+      content.pricing.forEach(function(p){
+        parts.push('      <div class="price-card'+(p.highlight?' highlight':'')+'">');
+        parts.push('        <h3>'+escapeHtml(p.name)+'</h3>');
+        parts.push('        <div class="price">'+escapeHtml(p.price)+' <span>'+escapeHtml(p.period)+'</span></div>');
+        parts.push('        <ul>'+p.features.map(function(f){ return '<li>'+escapeHtml(f)+'</li>'; }).join('')+'</ul>');
+        parts.push('        <a href="#contact" class="btn">'+escapeHtml(p.cta)+'</a>');
+        parts.push('      </div>');
+      });
+      parts.push('    </div>');
+      parts.push('  </div>');
+      parts.push('</section>');
+    }
+
+    // coaching / mentoring
+    if(state.sections.coaching){
+      parts.push('<section id="coaching">');
+      parts.push('  <div class="container'+revealClass+'">');
+      parts.push('    <span class="section-kicker">Work with us</span>');
+      parts.push('    <h2 class="section-title">Coaching &amp; Mentoring</h2>');
+      parts.push('    <div class="coaching-grid">');
+      content.coaching.forEach(function(c){
+        parts.push('      <div class="coaching-card">');
+        parts.push('        <h3>'+escapeHtml(c.title)+'</h3>');
+        parts.push('        <p>'+escapeHtml(c.desc)+'</p>');
+        parts.push('        <span class="coaching-price">'+escapeHtml(c.price)+'</span>');
+        parts.push('        <a href="'+(state.bookingUrl ? escapeHtml(state.bookingUrl) : '#contact')+'" class="btn"'+(state.bookingUrl ? ' target="_blank" rel="noopener"' : '')+'>Book a call</a>');
+        parts.push('      </div>');
+      });
+      parts.push('    </div>');
+      parts.push('  </div>');
+      parts.push('</section>');
+    }
+
+    // online store
+    if(state.sections.store){
+      parts.push('<section id="store" style="background:rgba(120,120,120,.04);">');
+      parts.push('  <div class="container'+revealClass+'">');
+      parts.push('    <span class="section-kicker">Shop</span>');
+      parts.push('    <h2 class="section-title">Store</h2>');
+      parts.push('    <div class="store-grid">');
+      content.storeProducts.forEach(function(p){
+        parts.push('      <div class="product-card">');
+        parts.push('        <div class="product-ph"></div>');
+        parts.push('        <div class="product-body">');
+        parts.push('          <h3>'+escapeHtml(p.name)+'</h3>');
+        parts.push('          <div class="product-price">'+escapeHtml(p.price)+'</div>');
+        parts.push('          <p>'+escapeHtml(p.desc)+'</p>');
+        parts.push('          <a href="'+(state.storeUrl ? escapeHtml(state.storeUrl) : '#')+'" class="btn"'+(state.storeUrl ? ' target="_blank" rel="noopener"' : '')+'>Buy</a>');
+        parts.push('        </div>');
+        parts.push('      </div>');
+      });
+      parts.push('    </div>');
+      parts.push('  </div>');
+      parts.push('</section>');
+    }
+
+    // video embed
+    if(state.sections.video){
+      var embedUrl = toVideoEmbedUrl(state.videoUrl);
+      parts.push('<section id="video">');
+      parts.push('  <div class="container'+revealClass+'">');
+      parts.push('    <span class="section-kicker">Watch</span>');
+      parts.push('    <h2 class="section-title">Featured Video</h2>');
+      parts.push('    <div class="video-embed-wrap">');
+      if(embedUrl){
+        parts.push('      <iframe src="'+escapeHtml(embedUrl)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>');
+      } else {
+        parts.push('      <div class="video-ph">Add a YouTube or Vimeo URL in the builder to embed your video here</div>');
+      }
+      parts.push('    </div>');
+      parts.push('  </div>');
+      parts.push('</section>');
+    }
+
+    // blog / posts
+    if(state.sections.blog){
+      parts.push('<section id="blog" style="background:rgba(120,120,120,.04);">');
+      parts.push('  <div class="container'+revealClass+'">');
+      parts.push('    <span class="section-kicker">Read</span>');
+      parts.push('    <h2 class="section-title">From the Blog</h2>');
+      parts.push('    <div class="blog-grid">');
+      content.blogPosts.forEach(function(b){
+        parts.push('      <div class="blog-card">');
+        parts.push('        <div class="blog-ph"></div>');
+        parts.push('        <div class="blog-body">');
+        parts.push('          <div class="blog-date">'+escapeHtml(b.date)+'</div>');
+        parts.push('          <h3>'+escapeHtml(b.title)+'</h3>');
+        parts.push('          <p>'+escapeHtml(b.excerpt)+'</p>');
+        parts.push('        </div>');
+        parts.push('      </div>');
+      });
+      parts.push('    </div>');
+      parts.push('  </div>');
+      parts.push('</section>');
+    }
+
+    // events / tour dates
+    if(state.sections.events){
+      parts.push('<section id="events">');
+      parts.push('  <div class="container'+revealClass+'">');
+      parts.push('    <span class="section-kicker">Save the date</span>');
+      parts.push('    <h2 class="section-title">Events</h2>');
+      parts.push('    <div class="events-list">');
+      content.events.forEach(function(e){
+        parts.push('      <div class="event-item"><div class="event-date">'+escapeHtml(e.date)+'</div><h4>'+escapeHtml(e.title)+'</h4><div class="event-loc">'+escapeHtml(e.location)+'</div></div>');
       });
       parts.push('    </div>');
       parts.push('  </div>');
@@ -1177,6 +1566,10 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     el("podcastFields").style.display = el("siteType").value === "podcast" ? "block" : "none";
   }
 
+  function toggleCustomFontFields(){
+    el("customFontFields").style.display = el("fontPair").value === "custom" ? "block" : "none";
+  }
+
   function init(){
     buildSectionChecks();
     buildColorSwatches();
@@ -1184,10 +1577,14 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     document.querySelector('.swatch[data-color="sunset"]').classList.add("active");
     applyStyleDefaults();
     toggleSiteTypeFields();
+    toggleCustomFontFields();
     wireTabs();
+    wireColorHexSync();
+    wireCustomVibe();
 
     el("siteType").addEventListener("change", toggleSiteTypeFields);
     el("styleVibe").addEventListener("change", applyStyleDefaults);
+    el("fontPair").addEventListener("change", toggleCustomFontFields);
     el("generateBtn").addEventListener("click", generate);
     el("copyBtn").addEventListener("click", copyCurrentTab);
     el("downloadBtn").addEventListener("click", downloadZip);
