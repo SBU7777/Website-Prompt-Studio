@@ -74,6 +74,16 @@
   .status-msg.ok{display:block; background:rgba(90,209,143,.12); color:var(--ui-good); border:1px solid rgba(90,209,143,.3);}
   .status-msg.err{display:block; background:rgba(255,107,107,.12); color:var(--ui-danger); border:1px solid rgba(255,107,107,.3);}
   .status-msg.pending{display:block; background:rgba(124,156,255,.12); color:var(--ui-accent); border:1px solid rgba(124,156,255,.3);}
+  .project-list{display:flex; flex-direction:column; gap:6px; margin-top:10px;}
+  .project-item{display:flex; align-items:center; gap:8px; background:var(--ui-panel-2); border:1px solid var(--ui-border); border-radius:8px; padding:8px 10px;}
+  .project-item .proj-info{flex:1; min-width:0;}
+  .project-item .proj-name{font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .project-item .proj-date{font-size:11px; color:var(--ui-text-dim);}
+  .project-item button{border:none; background:none; color:var(--ui-text-dim); font-size:13px; padding:4px 6px; border-radius:4px;}
+  .project-item button:hover{background:var(--ui-border); color:var(--ui-text);}
+  .project-item button.load-btn:hover{color:var(--ui-accent);}
+  .project-item button.del-btn:hover{color:var(--ui-danger);}
+  .project-empty{font-size:12px; color:var(--ui-text-dim); padding:8px 2px;}
 
   .right{display:flex; flex-direction:column; min-height:calc(100vh - 66px);}
   .tabs{display:flex; gap:2px; border-bottom:1px solid var(--ui-border); padding:0 14px; background:var(--ui-panel);}
@@ -241,6 +251,24 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
       </div>
     </details>
 
+    <h2>5 · My Projects</h2>
+    <p class="helptext" style="margin-top:-6px; margin-bottom:10px;">Save whatever you've built so you never lose it — reopen this tool anytime and pick up where you left off.</p>
+    <div class="field-row">
+      <div class="field" style="flex:2;"><input type="text" id="projectName" placeholder="Name this project, e.g. The Long Take"></div>
+      <button class="btn secondary" id="saveProjectBtn" style="flex:1;">💾 Save</button>
+    </div>
+    <div class="status-msg" id="projectStatus"></div>
+    <div id="projectList" class="project-list"></div>
+    <details id="supabaseDetails" style="margin-top:10px;">
+      <summary>Database connection (advanced)</summary>
+      <div class="inner">
+        <p class="helptext">Saved projects are stored in your own Supabase project. Defaults to the one already connected — only change these if you want to use a different Supabase project.</p>
+        <div class="field"><label>Supabase Project URL</label><input type="text" id="supabaseUrl" placeholder="https://xxxxxxxxxxxx.supabase.co"></div>
+        <div class="field"><label>Supabase publishable/anon key</label><input type="password" id="supabaseKey" placeholder="sb_publishable_..."></div>
+        <button class="btn secondary small" id="reconnectSupabaseBtn">Reconnect</button>
+      </div>
+    </details>
+
     <div class="generate-bar">
       <button class="btn block" id="generateBtn">Generate website code →</button>
     </div>
@@ -270,6 +298,7 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
@@ -1540,6 +1569,203 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     });
   }
 
+  /* ============================= MY PROJECTS (SUPABASE) ============================= */
+
+  var DEFAULT_SUPABASE_URL = "https://fquxxvqwsxyojbrtkkmq.supabase.co";
+  var DEFAULT_SUPABASE_KEY = "sb_publishable_aCNO48h3zDfdDBBUMl0CRA_wQtZ6WXo";
+  var projectsClient = null;
+
+  function initSupabaseProjects(){
+    var url = (el("supabaseUrl").value || "").trim();
+    var key = (el("supabaseKey").value || "").trim();
+    if(!url || !key){ projectsClient = null; return; }
+    try{
+      projectsClient = supabase.createClient(url, key);
+    } catch(e){
+      projectsClient = null;
+    }
+  }
+
+  function projectStatus(msg, kind){
+    var box = el("projectStatus");
+    box.className = "status-msg " + (kind || "");
+    box.textContent = msg;
+  }
+
+  function serializeFormState(){
+    var sections = {};
+    SECTION_DEFS.forEach(function(s){
+      if(s.always) return;
+      var box = el("sec_"+s.key);
+      sections[s.key] = box ? box.checked : false;
+    });
+    return {
+      siteType: el("siteType").value,
+      siteName: el("siteName").value,
+      tagline: el("tagline").value,
+      description: el("description").value,
+      sections: sections,
+      linkSpotify: el("linkSpotify") ? el("linkSpotify").value : "",
+      linkApple: el("linkApple") ? el("linkApple").value : "",
+      linkYoutube: el("linkYoutube") ? el("linkYoutube").value : "",
+      linkRss: el("linkRss") ? el("linkRss").value : "",
+      episodeList: el("episodeList") ? el("episodeList").value : "",
+      videoUrl: el("videoUrl").value,
+      storeUrl: el("storeUrl").value,
+      bookingUrl: el("bookingUrl").value,
+      styleVibe: el("styleVibe").value,
+      customVibeText: el("customVibeText").value,
+      colorKey: selectedColorKey(),
+      cPrimary: el("cPrimary").value,
+      cSecondary: el("cSecondary").value,
+      cAccent: el("cAccent").value,
+      cBg: el("cBg").value,
+      cText: el("cText").value,
+      fontPair: el("fontPair").value,
+      customHeadingFont: el("customHeadingFont").value,
+      customBodyFont: el("customBodyFont").value,
+      layoutStructure: el("layoutStructure").value,
+      framework: el("framework").value,
+      darkModeToggle: el("darkModeToggle").checked,
+      scrollAnim: el("scrollAnim").checked,
+      stickyHeader: el("stickyHeader").checked
+    };
+  }
+
+  function restoreFormState(state){
+    el("siteType").value = state.siteType || "podcast";
+    toggleSiteTypeFields();
+    el("siteName").value = state.siteName || "";
+    el("tagline").value = state.tagline || "";
+    el("description").value = state.description || "";
+
+    (state.sections ? Object.keys(state.sections) : []).forEach(function(key){
+      var box = el("sec_"+key);
+      if(box) box.checked = !!state.sections[key];
+    });
+
+    if(el("linkSpotify")) el("linkSpotify").value = state.linkSpotify || "";
+    if(el("linkApple")) el("linkApple").value = state.linkApple || "";
+    if(el("linkYoutube")) el("linkYoutube").value = state.linkYoutube || "";
+    if(el("linkRss")) el("linkRss").value = state.linkRss || "";
+    if(el("episodeList")) el("episodeList").value = state.episodeList || "";
+
+    el("videoUrl").value = state.videoUrl || "";
+    el("storeUrl").value = state.storeUrl || "";
+    el("bookingUrl").value = state.bookingUrl || "";
+
+    el("styleVibe").value = state.styleVibe || "minimal";
+    el("customVibeWrap").style.display = state.styleVibe === "custom" ? "block" : "none";
+    el("customVibeText").value = state.customVibeText || "";
+
+    var colorKey = state.colorKey || "sunset";
+    var swatch = document.querySelector('.swatch[data-color="'+colorKey+'"]');
+    document.querySelectorAll(".swatch").forEach(function(s){ s.classList.remove("active"); });
+    if(swatch) swatch.classList.add("active");
+    el("customColorGrid").style.display = colorKey === "custom" ? "grid" : "none";
+    el("cPrimary").value = state.cPrimary || "#7c5cff";
+    el("cSecondary").value = state.cSecondary || "#1b1b2f";
+    el("cAccent").value = state.cAccent || "#ffb703";
+    el("cBg").value = state.cBg || "#ffffff";
+    el("cText").value = state.cText || "#1a1a1a";
+    ["cPrimary","cSecondary","cAccent","cBg","cText"].forEach(function(id){
+      var hexEl = el(id+"Hex");
+      if(hexEl) hexEl.value = el(id).value;
+    });
+
+    el("fontPair").value = state.fontPair || "poppinsInter";
+    toggleCustomFontFields();
+    el("customHeadingFont").value = state.customHeadingFont || "";
+    el("customBodyFont").value = state.customBodyFont || "";
+
+    el("layoutStructure").value = state.layoutStructure || "sticky-scroll";
+    el("framework").value = state.framework || "plain";
+    el("darkModeToggle").checked = state.darkModeToggle !== false;
+    el("scrollAnim").checked = state.scrollAnim !== false;
+    el("stickyHeader").checked = state.stickyHeader !== false;
+
+    generate();
+  }
+
+  function saveProject(){
+    var name = el("projectName").value.trim();
+    if(!name){ projectStatus("Give your project a name first.", "err"); return; }
+    if(!projectsClient){ projectStatus("Not connected to a database yet.", "err"); return; }
+    projectStatus("Saving…", "pending");
+    var state = serializeFormState();
+    projectsClient.from("projects").insert({ name: name, state: state }).then(function(res){
+      if(res.error){
+        projectStatus("Couldn't save: " + res.error.message, "err");
+      } else {
+        projectStatus("Saved “" + name + "”.", "ok");
+        el("projectName").value = "";
+        refreshProjectList();
+      }
+    });
+  }
+
+  function refreshProjectList(){
+    var list = el("projectList");
+    if(!projectsClient){
+      list.innerHTML = '<div class="project-empty">Not connected — check the database connection below.</div>';
+      return;
+    }
+    projectsClient.from("projects").select("id,name,created_at").order("created_at", { ascending:false }).then(function(res){
+      if(res.error){
+        list.innerHTML = '<div class="project-empty">Couldn\'t load projects: ' + escapeHtml(res.error.message) + '</div>';
+        return;
+      }
+      var rows = res.data || [];
+      if(!rows.length){
+        list.innerHTML = '<div class="project-empty">No saved projects yet — build something and click Save.</div>';
+        return;
+      }
+      list.innerHTML = rows.map(function(r){
+        var d = new Date(r.created_at);
+        var dateStr = isNaN(d.getTime()) ? "" : d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+        return '<div class="project-item" data-id="'+escapeHtml(r.id)+'">' +
+          '<div class="proj-info"><div class="proj-name">'+escapeHtml(r.name)+'</div><div class="proj-date">'+escapeHtml(dateStr)+'</div></div>' +
+          '<button class="load-btn" data-load="'+escapeHtml(r.id)+'" title="Load">📂</button>' +
+          '<button class="del-btn" data-del="'+escapeHtml(r.id)+'" title="Delete">🗑</button>' +
+          '</div>';
+      }).join("");
+    });
+  }
+
+  function loadProjectById(id){
+    if(!projectsClient) return;
+    projectStatus("Loading…", "pending");
+    projectsClient.from("projects").select("state,name").eq("id", id).single().then(function(res){
+      if(res.error || !res.data){
+        projectStatus("Couldn't load that project.", "err");
+        return;
+      }
+      restoreFormState(res.data.state || {});
+      projectStatus("Loaded “" + res.data.name + "”.", "ok");
+    });
+  }
+
+  function deleteProjectById(id){
+    if(!projectsClient) return;
+    projectsClient.from("projects").delete().eq("id", id).then(function(res){
+      if(res.error){
+        projectStatus("Couldn't delete: " + res.error.message, "err");
+      } else {
+        projectStatus("Deleted.", "ok");
+        refreshProjectList();
+      }
+    });
+  }
+
+  function wireProjectList(){
+    el("projectList").addEventListener("click", function(e){
+      var loadId = e.target.getAttribute("data-load");
+      var delId = e.target.getAttribute("data-del");
+      if(loadId) loadProjectById(loadId);
+      if(delId) deleteProjectById(delId);
+    });
+  }
+
   /* ============================= EXAMPLE LOADER ============================= */
 
   function loadPodcastExample(){
@@ -1581,6 +1807,12 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     wireTabs();
     wireColorHexSync();
     wireCustomVibe();
+    wireProjectList();
+
+    el("supabaseUrl").value = DEFAULT_SUPABASE_URL;
+    el("supabaseKey").value = DEFAULT_SUPABASE_KEY;
+    initSupabaseProjects();
+    refreshProjectList();
 
     el("siteType").addEventListener("change", toggleSiteTypeFields);
     el("styleVibe").addEventListener("change", applyStyleDefaults);
@@ -1590,6 +1822,12 @@ Ep 11: Sound as Story | Composer Lin Marsh on building a film's emotional score"
     el("downloadBtn").addEventListener("click", downloadZip);
     el("aiEnhanceBtn").addEventListener("click", aiEnhance);
     el("loadPodcastExample").addEventListener("click", loadPodcastExample);
+    el("saveProjectBtn").addEventListener("click", saveProject);
+    el("reconnectSupabaseBtn").addEventListener("click", function(){
+      initSupabaseProjects();
+      refreshProjectList();
+      projectStatus(projectsClient ? "Reconnected." : "Enter a valid URL and key.", projectsClient ? "ok" : "err");
+    });
   }
 
   document.addEventListener("DOMContentLoaded", init);
